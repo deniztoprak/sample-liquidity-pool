@@ -1,12 +1,13 @@
 const hre = require("hardhat");
 
 async function main() {
-  const Greeter = await hre.ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const LPToken = await hre.ethers.getContractFactory("LPToken");
+  const initialSupply = hre.ethers.BigNumber.from('99999');
+  const LPTokenInstance = await LPToken.deploy(initialSupply);
 
-  await greeter.deployed();
+  await LPTokenInstance.deployed();
 
-  console.log("Greeter deployed to:", greeter.address);
+  console.log("LPToken deployed to:", LPTokenInstance.address);
 }
 
 main()
