@@ -1,16 +1,26 @@
-const { expect } = require("chai");
+const { expect } = require('chai');
 
-describe("LPToken", function () {
-  it("Should have an initial supply", async function () {
-    const initialSupply = hre.ethers.BigNumber.from('99999');
-    const LPToken = await hre.ethers.getContractFactory("LPToken");
-    const LPTokenInstance = await LPToken.deploy(initialSupply);
-    await LPTokenInstance.deployed();
+const initialSupply = hre.ethers.BigNumber.from('99999');
+let LPTokenInstance;
 
+beforeEach(async function () {
+  const LPToken = await hre.ethers.getContractFactory('LPToken');
+  LPTokenInstance = await LPToken.deploy(initialSupply);
+  await LPTokenInstance.deployed();
+});
+
+describe('LPToken', function () {
+  it('Should initialize the total supply', async function () {
+    const totalSupply = await LPTokenInstance.totalSupply();
+
+    expect(totalSupply).to.equal(initialSupply);
+  });
+
+  it('Should transfer the initial supply to deployer account', async function () {
     const [deployer] = await hre.ethers.getSigners();
     const deployerBalance = await LPTokenInstance.balanceOf(deployer.address);
 
-    expect(deployerBalance.eq(initialSupply)).to.be.true;
+    expect(deployerBalance).to.equal(initialSupply);
 
     // const setGreetingTx = await LPTokenInstance.setGreeting("Hola, mundo!");
 
