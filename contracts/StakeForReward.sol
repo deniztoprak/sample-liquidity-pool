@@ -14,7 +14,7 @@ contract StakeForReward {
 
     struct Stake {
         address user;
-        uint256 amount;
+        uint256 balance;
         uint256 since;
     }
 
@@ -26,9 +26,17 @@ contract StakeForReward {
         rewardToken = IERC721(_rewardToken);
     }
 
+    function totalSupply() external view returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address account) external view returns (uint256) {
+        return _stakes[account].balance;
+    }
+
     function stake(uint256 _amount) external {
         stakeToken.transferFrom(msg.sender, address(this), _amount);
-        _stakes[msg.sender].amount += _amount;
+        _stakes[msg.sender].balance += _amount;
         _totalSupply += _amount;
     }
 }
