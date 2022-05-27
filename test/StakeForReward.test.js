@@ -144,10 +144,10 @@ describe('StakeForReward', function () {
     // Fast forward to to one month later ...
     await network.provider.send('evm_mine', [oneMonthLater]);
 
-    // Except testUser1 gets level 1 reward: 1 day / (((1500 * 10) / 500) * 1 day)
+    // Except testUser1 gets level 1 reward: 30 day / (((1500 * 10) / 500) * 1 day)
     await StakeForRewardInstance.connect(testUser1).claimReward();
 
-    // Except testUser2 gets level 2 reward: 1 day / (((1500 * 10) / 1000) * 1 day)
+    // Except testUser2 gets level 2 reward: 30 day / (((1500 * 10) / 1000) * 1 day)
     await StakeForRewardInstance.connect(testUser2).claimReward();
   });
 });
