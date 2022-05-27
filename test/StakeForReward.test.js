@@ -64,4 +64,56 @@ describe('StakeForReward', function () {
       'ERC20: insufficient allowance'
     );
   });
+
+  it('allows users withdraw their stake', async function () {
+    const [deployer, testUser] = await hre.ethers.getSigners();
+    const testUserTokenAmount = hre.ethers.BigNumber.from('1000');
+
+    await LPTokenInstance.connect(deployer).transfer(testUser.address, testUserTokenAmount);
+    await LPTokenInstance.connect(testUser).approve(StakeForRewardInstance.address, testUserTokenAmount);
+
+    await StakeForRewardInstance.connect(testUser).stake(testUserTokenAmount);
+
+    // Withdraw half of the balance
+    await StakeForRewardInstance.connect(testUser).withdraw(testUserTokenAmount.div(2));
+    let testUserBalance = await StakeForRewardInstance.balanceOf(testUser.address);
+    let totalSupply = await StakeForRewardInstance.totalSupply();
+    expect(testUserBalance).to.equal(testUserTokenAmount.div(2));
+    expect(totalSupply).to.equal(testUserTokenAmount.div(2));
+
+    // Withdraw another half of the balance
+    await StakeForRewardInstance.connect(testUser).withdraw(testUserTokenAmount.div(2));
+    testUserBalance = await StakeForRewardInstance.balanceOf(testUser.address);
+    totalSupply = await StakeForRewardInstance.totalSupply();
+    expect(testUserBalance).to.equal(0);
+    expect(totalSupply).to.equal(0);
+  });
+
+  it('reverts when users try to withdraw 0 token', async function () {
+    const [deployer, testUser] = await hre.ethers.getSigners();
+    const testUserTokenAmount = hre.ethers.BigNumber.from('1000');
+
+    await LPTokenInstance.connect(deployer).transfer(testUser.address, testUserTokenAmount);
+    await LPTokenInstance.connect(testUser).approve(StakeForRewardInstance.address, testUserTokenAmount);
+
+    await StakeForRewardInstance.connect(testUser).stake(testUserTokenAmount);
+
+    await expect(StakeForRewardInstance.withdraw(hre.ethers.BigNumber.from('0'))).to.be.revertedWith(
+      'Withdraw amount can not be 0'
+    );
+  });
+
+  it('reverts when users try to withdraw more than their balance', async function () {
+    const [deployer, testUser] = await hre.ethers.getSigners();
+    const testUserTokenAmount = hre.ethers.BigNumber.from('1000');
+
+    await LPTokenInstance.connect(deployer).transfer(testUser.address, testUserTokenAmount);
+    await LPTokenInstance.connect(testUser).approve(StakeForRewardInstance.address, testUserTokenAmount);
+
+    await StakeForRewardInstance.connect(testUser).stake(testUserTokenAmount);
+
+    await expect(StakeForRewardInstance.withdraw(testUserTokenAmount.add('1'))).to.be.revertedWith(
+      "User doesn't have enough balance"
+    );
+  });
 });
