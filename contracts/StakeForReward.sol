@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// Use SafeERC20 to deal with non-reverting / non-standard ERC20 tokens
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
@@ -14,7 +15,7 @@ contract StakeForReward {
 
     struct Stake {
         uint256 balance;
-        uint256 stakeTime;
+        uint256 startTime;
     }
 
     uint256 private _totalSupply;
@@ -37,7 +38,7 @@ contract StakeForReward {
         stakeToken.safeTransferFrom(msg.sender, address(this), _amount);
         _totalSupply += _amount;
         _stakes[msg.sender].balance += _amount;
-        _stakes[msg.sender].stakeTime = block.timestamp;
+        _stakes[msg.sender].startTime = block.timestamp;
     }
 
     function withdraw(uint256 _amount) external {
@@ -48,5 +49,24 @@ contract StakeForReward {
         _totalSupply -= _amount;
         _stakes[msg.sender].balance -= _amount;
         stakeToken.safeTransfer(msg.sender, _amount);
+    }
+
+    function getRewardLevel(Stake storage _stake) private view returns (uint256) {
+        // Stake-weighted level-up time
+        uint256 levelUpTime = ((_totalSupply * 10) / _stake.balance) * 1 days;
+        uint256 rewardLevel = (block.timestamp - _stake.startTime) / levelUpTime;
+        // console.log("TOTAL", _totalSupply);
+        // console.log("BALANCE", _stake.balance);
+        // console.log("CURRENT TIME", block.timestamp);
+        // console.log("START TIME", _stake.startTime);
+        // console.log("LEVEL UP TIME", levelUpTime);
+        // console.log("LEVEL", rewardLevel);
+
+        return rewardLevel;
+    }
+
+    function claimReward() external {
+        require(_stakes[msg.sender].balance > 0, "User doesn't have enough balance");
+        uint256 rewardLevel = getRewardLevel(_stakes[msg.sender]);
     }
 }

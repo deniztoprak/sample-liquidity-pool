@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const dayjs = require('dayjs');
 
 let LPTokenInstance;
 let StakeForRewardInstance;
@@ -121,5 +122,32 @@ describe('StakeForReward', function () {
     await expect(StakeForRewardInstance.connect(testUser2).withdraw(unstakedTokenAmount)).to.be.revertedWith(
       "User doesn't have enough balance"
     );
+  });
+
+  it('allows users claim their reward after a certain time period has passed', async function () {
+    const [deployer, testUser1, testUser2] = await hre.ethers.getSigners();
+    const testUser1TokenAmount = hre.ethers.BigNumber.from('500');
+    const testUser2TokenAmount = hre.ethers.BigNumber.from('1000');
+
+    await LPTokenInstance.connect(deployer).transfer(testUser1.address, testUser1TokenAmount);
+    await LPTokenInstance.connect(deployer).transfer(testUser2.address, testUser2TokenAmount);
+    await LPTokenInstance.connect(testUser1).approve(StakeForRewardInstance.address, testUser1TokenAmount);
+    await LPTokenInstance.connect(testUser2).approve(StakeForRewardInstance.address, testUser2TokenAmount);
+
+    await StakeForRewardInstance.connect(testUser1).stake(testUser1TokenAmount);
+    await StakeForRewardInstance.connect(testUser2).stake(testUser2TokenAmount);
+    const currentBlockNumber = await ethers.provider.getBlockNumber();
+    const currentBlock = await ethers.provider.getBlock(currentBlockNumber);
+    const currentBlockTime = dayjs.unix(currentBlock.timestamp);
+    const oneMonthLater = currentBlockTime.add(30, 'day').unix();
+
+    // Fast forward to to one month later ...
+    await network.provider.send('evm_mine', [oneMonthLater]);
+
+    // Except testUser1 gets level 1 reward: 1 day / (((1500 * 10) / 500) * 1 day)
+    await StakeForRewardInstance.connect(testUser1).claimReward();
+
+    // Except testUser2 gets level 2 reward: 1 day / (((1500 * 10) / 1000) * 1 day)
+    await StakeForRewardInstance.connect(testUser2).claimReward();
   });
 });
