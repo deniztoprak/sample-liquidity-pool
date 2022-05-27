@@ -13,9 +13,8 @@ contract StakeForReward {
     IERC721 public rewardToken;
 
     struct Stake {
-        address user;
         uint256 balance;
-        uint256 since;
+        uint256 stakeTime;
     }
 
     uint256 private _totalSupply;
@@ -38,6 +37,7 @@ contract StakeForReward {
         stakeToken.safeTransferFrom(msg.sender, address(this), _amount);
         _totalSupply += _amount;
         _stakes[msg.sender].balance += _amount;
+        _stakes[msg.sender].stakeTime = block.timestamp;
     }
 
     function withdraw(uint256 _amount) external {
