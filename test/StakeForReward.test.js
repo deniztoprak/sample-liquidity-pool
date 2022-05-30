@@ -21,15 +21,27 @@ async function deployRewardToken() {
   return RewardTokenInstance;
 }
 
-beforeEach(async function () {
-  const LPTokenInstance = await deployLPToken();
-  const RewardTokenInstance = await deployRewardToken();
-
+async function deployStakeForRewardInstance(LPTokenInstance, RewardTokenInstance) {
   const StakeForReward = await hre.ethers.getContractFactory('StakeForReward');
   StakeForRewardInstance = await StakeForReward.deploy(LPTokenInstance.address, RewardTokenInstance.address);
   await StakeForRewardInstance.deployed();
   // Set stake contract as the owner of reward token contract
   await RewardTokenInstance.transferOwnership(StakeForRewardInstance.address);
+}
+
+async function fastForwardBlockTime(days) {
+  const currentBlockNumber = await ethers.provider.getBlockNumber();
+  const currentBlock = await ethers.provider.getBlock(currentBlockNumber);
+  const currentBlockTime = dayjs.unix(currentBlock.timestamp);
+  const one1MonthLater = currentBlockTime.add(days, 'day').unix();
+
+  await network.provider.send('evm_mine', [one1MonthLater]);
+}
+
+beforeEach(async function () {
+  const LPTokenInstance = await deployLPToken();
+  const RewardTokenInstance = await deployRewardToken();
+  await deployStakeForRewardInstance(LPTokenInstance, RewardTokenInstance);
 });
 
 describe('StakeForReward', function () {
@@ -138,18 +150,52 @@ describe('StakeForReward', function () {
 
     await StakeForRewardInstance.connect(testUser1).stake(testUser1TokenAmount);
     await StakeForRewardInstance.connect(testUser2).stake(testUser2TokenAmount);
-    const currentBlockNumber = await ethers.provider.getBlockNumber();
-    const currentBlock = await ethers.provider.getBlock(currentBlockNumber);
-    const currentBlockTime = dayjs.unix(currentBlock.timestamp);
-    const oneMonthLater = currentBlockTime.add(30, 'day').unix();
 
     // Fast forward to to one month later ...
-    await network.provider.send('evm_mine', [oneMonthLater]);
+    await fastForwardBlockTime(30);
 
-    // Except testUser1 gets level 1 reward: 30 day / (((1500 * 10) / 500) * 1 day)
+    // Expect testUser1 gets level 1 reward: 30 day / (((1500 * 10) / 500) * 1 day)
     await StakeForRewardInstance.connect(testUser1).claimReward();
 
-    // Except testUser2 gets level 2 reward: 30 day / (((1500 * 10) / 1000) * 1 day)
+    // Expect testUser2 gets level 2 reward: 30 day / (((1500 * 10) / 1000) * 1 day)
     await StakeForRewardInstance.connect(testUser2).claimReward();
+  });
+
+  it('reverts when users claim their reward without staking LP tokens', async function () {
+    const [deployer, testUser] = await hre.ethers.getSigners();
+
+    // Expect testUser gets no reward
+    await expect(StakeForRewardInstance.connect(testUser).claimReward()).to.be.revertedWith(
+      "User doesn't have enough balance"
+    );
+  });
+
+  it('reverts when users claim their reward before next reward level stake time', async function () {
+    const [deployer, testUser] = await hre.ethers.getSigners();
+    const testUserTokenAmount = hre.ethers.BigNumber.from('500');
+
+    await LPTokenInstance.connect(deployer).transfer(testUser.address, testUserTokenAmount);
+    await LPTokenInstance.connect(testUser).approve(StakeForRewardInstance.address, testUserTokenAmount);
+
+    await StakeForRewardInstance.connect(testUser).stake(testUserTokenAmount);
+
+    // Fast forward to to fifteen days later ...
+    await fastForwardBlockTime(5);
+
+    // Expect testUser gets no reward: 5 day / (((500 * 10) / 500) * 1 day)
+    await expect(StakeForRewardInstance.connect(testUser).claimReward()).to.be.revertedWith(
+      'You have not reached the next reward level'
+    );
+
+    // Fast forward to to one month days later ...
+    await fastForwardBlockTime(10);
+
+    // Expect testUser gets level 1 reward
+    await StakeForRewardInstance.connect(testUser).claimReward();
+
+    // Expect claimReward reverts when testUser re-claims reward before level 2 stake time elapsed
+    await expect(StakeForRewardInstance.connect(testUser).claimReward()).to.be.revertedWith(
+      'You have not reached the next reward level'
+    );
   });
 });

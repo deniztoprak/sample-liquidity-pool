@@ -67,21 +67,22 @@ contract StakeForReward {
         require(_stakes[msg.sender].balance > 0, "User doesn't have enough balance");
         uint256 rewardLevel = getRewardLevel(msg.sender);
 
-        // console.log("TOTAL", _totalSupply);
-        // console.log("BALANCE", _stakes[msg.sender].balance);
-        // console.log("CURRENT TIME", block.timestamp);
-        // console.log("START TIME", _stakes[msg.sender].startTime);
-        // // console.log("LEVEL UP TIME", levelUpTime);
-        // console.log("REWARD LEVEL", rewardLevel);
-        // console.log("STAKER LEVEL", _stakes[msg.sender].rewardLevel);
+        console.log("TOTAL", _totalSupply);
+        console.log("BALANCE", _stakes[msg.sender].balance);
+        console.log("CURRENT TIME", block.timestamp);
+        console.log("START TIME", _stakes[msg.sender].startTime);
+        // console.log("LEVEL UP TIME", levelUpTime);
+        console.log("REWARD LEVEL", rewardLevel);
+        console.log("STAKER LEVEL", _stakes[msg.sender].rewardLevel);
 
         require(_stakes[msg.sender].rewardLevel != rewardLevel, "You have not reached the next reward level");
         require(_stakes[msg.sender].rewardLevel < 3, "You have already reached the highest reward level");
 
-        if (rewardLevel > 1) {
+        if (_stakes[msg.sender].rewardId != 0) {
             rewardToken.burn(_stakes[msg.sender].rewardId);
         }
         _stakes[msg.sender].rewardId = rewardToken.mint(msg.sender, Strings.toString(rewardLevel));
+        console.log("REWARD ID", _stakes[msg.sender].rewardId);
         _stakes[msg.sender].rewardLevel++;
     }
 }
