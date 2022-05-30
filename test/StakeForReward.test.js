@@ -40,8 +40,8 @@ async function fastForwardBlockTime(days) {
 
 async function getRewardTokenId(tx) {
   const receipt = await tx.wait();
-  const [rewardEvent] = receipt.events.filter((x) => {
-    return x.event == 'RewardPaid';
+  const [rewardEvent] = receipt.events.filter((e) => {
+    return e.event == 'RewardPaid';
   });
   return rewardEvent.args.rewardId.toString();
 }
