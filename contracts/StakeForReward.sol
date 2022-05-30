@@ -1,15 +1,17 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../interfaces/IRewardToken.sol";
 // Use SafeERC20 to deal with non-reverting / non-standard ERC20 tokens
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "../interfaces/IRewardToken.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract StakeForReward {
     using SafeERC20 for IERC20;
+
+    event RewardPaid(address indexed to, uint256 rewardId);
 
     IERC20 public stakeToken;
     IRewardToken public rewardToken;
@@ -67,14 +69,6 @@ contract StakeForReward {
         require(_stakes[msg.sender].balance > 0, "User doesn't have enough balance");
         uint256 rewardLevel = getRewardLevel(msg.sender);
 
-        console.log("TOTAL", _totalSupply);
-        console.log("BALANCE", _stakes[msg.sender].balance);
-        console.log("CURRENT TIME", block.timestamp);
-        console.log("START TIME", _stakes[msg.sender].startTime);
-        // console.log("LEVEL UP TIME", levelUpTime);
-        console.log("REWARD LEVEL", rewardLevel);
-        console.log("STAKER LEVEL", _stakes[msg.sender].rewardLevel);
-
         require(_stakes[msg.sender].rewardLevel != rewardLevel, "You have not reached the next reward level");
         require(_stakes[msg.sender].rewardLevel < 3, "You have already reached the highest reward level");
 
@@ -82,7 +76,7 @@ contract StakeForReward {
             rewardToken.burn(_stakes[msg.sender].rewardId);
         }
         _stakes[msg.sender].rewardId = rewardToken.mint(msg.sender, Strings.toString(rewardLevel));
-        console.log("REWARD ID", _stakes[msg.sender].rewardId);
-        _stakes[msg.sender].rewardLevel++;
+        _stakes[msg.sender].rewardLevel = rewardLevel;
+        emit RewardPaid(msg.sender, _stakes[msg.sender].rewardId);
     }
 }
