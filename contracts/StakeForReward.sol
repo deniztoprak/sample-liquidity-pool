@@ -11,7 +11,13 @@ import "../interfaces/IRewardToken.sol";
 contract StakeForReward {
     using SafeERC20 for IERC20;
 
+    // Events
+
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed to, uint256 rewardId);
+
+    // State variables
 
     IERC20 public stakeToken;
     IRewardToken public rewardToken;
@@ -31,6 +37,8 @@ contract StakeForReward {
         rewardToken = IRewardToken(_rewardToken);
     }
 
+    // View functions
+
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
@@ -39,11 +47,22 @@ contract StakeForReward {
         return _stakes[account].balance;
     }
 
+    function getRewardLevel(address staker) private view returns (uint256) {
+        // Stake-weighted level-up time
+        uint256 levelUpTime = ((_totalSupply * 10) / _stakes[staker].balance) * 1 days;
+        uint256 rewardLevel = (block.timestamp - _stakes[staker].startTime) / levelUpTime;
+
+        return rewardLevel;
+    }
+
+    // Mutative functions
+
     function stake(uint256 _amount) external {
         stakeToken.safeTransferFrom(msg.sender, address(this), _amount);
         _totalSupply += _amount;
         _stakes[msg.sender].balance += _amount;
         _stakes[msg.sender].startTime = block.timestamp;
+        emit Staked(msg.sender, _amount);
     }
 
     function withdraw(uint256 _amount) external {
@@ -55,14 +74,7 @@ contract StakeForReward {
         _stakes[msg.sender].balance -= _amount;
         _stakes[msg.sender].startTime = block.timestamp;
         stakeToken.safeTransfer(msg.sender, _amount);
-    }
-
-    function getRewardLevel(address staker) private view returns (uint256) {
-        // Stake-weighted level-up time
-        uint256 levelUpTime = ((_totalSupply * 10) / _stakes[staker].balance) * 1 days;
-        uint256 rewardLevel = (block.timestamp - _stakes[staker].startTime) / levelUpTime;
-
-        return rewardLevel;
+        emit Withdrawn(msg.sender, _amount);
     }
 
     function claimReward() external {
