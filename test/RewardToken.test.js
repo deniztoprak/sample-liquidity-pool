@@ -43,7 +43,7 @@ describe('RewardToken', function () {
     );
   });
 
-  it.only('allows token transfer only for contract owner', async function () {
+  it('allows token transfer only for contract owner', async function () {
     const tx = await RewardTokenInstance.connect(deployer).mint(deployer.address, '123');
     const rewardTokenId = await getRewardTokenId(tx);
 
