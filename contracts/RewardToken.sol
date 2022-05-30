@@ -34,11 +34,11 @@ contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
     }
 
     function mint(address to, string memory tokenURI) external override onlyOwner returns (uint256) {
+        _tokenIdTracker.increment();
         uint256 newItemId = _tokenIdTracker.current();
         _mint(to, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
-        _tokenIdTracker.increment();
         return newItemId;
     }
 }
