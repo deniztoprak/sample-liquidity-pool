@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "../interfaces/IRewardToken.sol";
 // Use SafeERC20 to deal with non-reverting / non-standard ERC20 tokens
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "hardhat/console.sol";
 
@@ -50,6 +51,7 @@ contract StakeForReward {
         // SafeMath is not needed, since the 0.8 compiler has built-in overflow checking.
         _totalSupply -= _amount;
         _stakes[msg.sender].balance -= _amount;
+        _stakes[msg.sender].startTime = block.timestamp;
         stakeToken.safeTransfer(msg.sender, _amount);
     }
 
@@ -79,7 +81,7 @@ contract StakeForReward {
         if (rewardLevel > 1) {
             rewardToken.burn(_stakes[msg.sender].rewardId);
         }
-        _stakes[msg.sender].rewardId = rewardToken.mint(msg.sender, "sfs");
+        _stakes[msg.sender].rewardId = rewardToken.mint(msg.sender, Strings.toString(rewardLevel));
         _stakes[msg.sender].rewardLevel++;
     }
 }

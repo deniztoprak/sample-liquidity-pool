@@ -15,7 +15,7 @@ async function deployLPToken() {
 
 async function deployRewardToken() {
   const RewardToken = await hre.ethers.getContractFactory('RewardToken');
-  const RewardTokenInstance = await RewardToken.deploy();
+  const RewardTokenInstance = await RewardToken.deploy('ipfs://123456789/');
   await RewardTokenInstance.deployed();
 
   return RewardTokenInstance;

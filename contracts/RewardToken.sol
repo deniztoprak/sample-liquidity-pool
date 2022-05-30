@@ -11,7 +11,11 @@ contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
 
     Counters.Counter private _tokenIdTracker;
 
-    constructor() ERC721("RewardToken", "RWT") {}
+    string private _baseTokenURI;
+
+    constructor(string memory baseTokenURI) ERC721("RewardToken", "RWT") {
+        _baseTokenURI = baseTokenURI;
+    }
 
     function _beforeTokenTransfer(
         address from,
@@ -19,6 +23,10 @@ contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
         uint256 tokenId
     ) internal override onlyOwner {
         super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return _baseTokenURI;
     }
 
     function burn(uint256 tokenId) external override onlyOwner {
