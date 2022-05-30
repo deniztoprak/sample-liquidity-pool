@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const dayjs = require('dayjs');
 
-let LPTokenInstance;
 let StakeForRewardInstance;
+let LPTokenInstance;
 let RewardTokenInstance;
 let deployer;
 let testUser1;
