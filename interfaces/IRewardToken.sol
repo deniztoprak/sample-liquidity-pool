@@ -6,5 +6,5 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 interface IRewardToken is IERC721 {
     function burn(uint256 tokenId) external;
 
-    function mint(address to) external;
+    function mint(address to, string memory tokenURI) external returns (uint256);
 }

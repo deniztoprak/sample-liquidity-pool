@@ -16,6 +16,8 @@ contract StakeForReward {
     struct Stake {
         uint256 balance;
         uint256 startTime;
+        uint256 rewardLevel;
+        uint256 rewardId;
     }
 
     uint256 private _totalSupply;
@@ -51,28 +53,33 @@ contract StakeForReward {
         stakeToken.safeTransfer(msg.sender, _amount);
     }
 
-    function getRewardLevel(Stake storage _stake) private returns (uint256) {
+    function getRewardLevel(address staker) private view returns (uint256) {
         // Stake-weighted level-up time
-        uint256 levelUpTime = ((_totalSupply * 10) / _stake.balance) * 1 days;
-        uint256 rewardLevel = (block.timestamp - _stake.startTime) / levelUpTime;
-
-        if (rewardLevel == 0) {
-            revert("Minimum stake time has not yet elapsed");
-        } else if (rewardLevel == 1) {
-            // rewardToken.mint(msg.sender);
-        }
-        // console.log("TOTAL", _totalSupply);
-        // console.log("BALANCE", _stake.balance);
-        // console.log("CURRENT TIME", block.timestamp);
-        // console.log("START TIME", _stake.startTime);
-        // console.log("LEVEL UP TIME", levelUpTime);
-        // console.log("LEVEL", rewardLevel);
+        uint256 levelUpTime = ((_totalSupply * 10) / _stakes[staker].balance) * 1 days;
+        uint256 rewardLevel = (block.timestamp - _stakes[staker].startTime) / levelUpTime;
 
         return rewardLevel;
     }
 
     function claimReward() external {
         require(_stakes[msg.sender].balance > 0, "User doesn't have enough balance");
-        uint256 rewardLevel = getRewardLevel(_stakes[msg.sender]);
+        uint256 rewardLevel = getRewardLevel(msg.sender);
+
+        // console.log("TOTAL", _totalSupply);
+        // console.log("BALANCE", _stakes[msg.sender].balance);
+        // console.log("CURRENT TIME", block.timestamp);
+        // console.log("START TIME", _stakes[msg.sender].startTime);
+        // // console.log("LEVEL UP TIME", levelUpTime);
+        // console.log("REWARD LEVEL", rewardLevel);
+        // console.log("STAKER LEVEL", _stakes[msg.sender].rewardLevel);
+
+        require(_stakes[msg.sender].rewardLevel != rewardLevel, "You have not reached the next reward level");
+        require(_stakes[msg.sender].rewardLevel < 3, "You have already reached the highest reward level");
+
+        if (rewardLevel > 1) {
+            rewardToken.burn(_stakes[msg.sender].rewardId);
+        }
+        _stakes[msg.sender].rewardId = rewardToken.mint(msg.sender, "sfs");
+        _stakes[msg.sender].rewardLevel++;
     }
 }
