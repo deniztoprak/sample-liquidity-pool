@@ -10,7 +10,7 @@ async function deployLPToken() {
   LPTokenInstance = await LPToken.deploy(initialSupply);
   await LPTokenInstance.deployed();
 
-  return LPTokenInstance.address;
+  return LPTokenInstance;
 }
 
 async function deployRewardToken() {
@@ -18,16 +18,18 @@ async function deployRewardToken() {
   const RewardTokenInstance = await RewardToken.deploy();
   await RewardTokenInstance.deployed();
 
-  return RewardTokenInstance.address;
+  return RewardTokenInstance;
 }
 
 beforeEach(async function () {
-  const LPTokenAddress = await deployLPToken();
-  const RewardTokenAddress = await deployRewardToken();
+  const LPTokenInstance = await deployLPToken();
+  const RewardTokenInstance = await deployRewardToken();
 
   const StakeForReward = await hre.ethers.getContractFactory('StakeForReward');
-  StakeForRewardInstance = await StakeForReward.deploy(LPTokenAddress, RewardTokenAddress);
+  StakeForRewardInstance = await StakeForReward.deploy(LPTokenInstance.address, RewardTokenInstance.address);
   await StakeForRewardInstance.deployed();
+  // Set stake contract as the owner of reward token contract
+  await RewardTokenInstance.transferOwnership(StakeForRewardInstance.address);
 });
 
 describe('StakeForReward', function () {

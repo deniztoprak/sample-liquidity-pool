@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../interfaces/IRewardToken.sol";
 // Use SafeERC20 to deal with non-reverting / non-standard ERC20 tokens
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "hardhat/console.sol";
 
@@ -11,7 +11,7 @@ contract StakeForReward {
     using SafeERC20 for IERC20;
 
     IERC20 public stakeToken;
-    IERC721 public rewardToken;
+    IRewardToken public rewardToken;
 
     struct Stake {
         uint256 balance;
@@ -23,7 +23,7 @@ contract StakeForReward {
 
     constructor(address _stakeToken, address _rewardToken) {
         stakeToken = IERC20(_stakeToken);
-        rewardToken = IERC721(_rewardToken);
+        rewardToken = IRewardToken(_rewardToken);
     }
 
     function totalSupply() external view returns (uint256) {
@@ -51,10 +51,16 @@ contract StakeForReward {
         stakeToken.safeTransfer(msg.sender, _amount);
     }
 
-    function getRewardLevel(Stake storage _stake) private view returns (uint256) {
+    function getRewardLevel(Stake storage _stake) private returns (uint256) {
         // Stake-weighted level-up time
         uint256 levelUpTime = ((_totalSupply * 10) / _stake.balance) * 1 days;
         uint256 rewardLevel = (block.timestamp - _stake.startTime) / levelUpTime;
+
+        if (rewardLevel == 0) {
+            revert("Minimum stake time has not yet elapsed");
+        } else if (rewardLevel == 1) {
+            // rewardToken.mint(msg.sender);
+        }
         // console.log("TOTAL", _totalSupply);
         // console.log("BALANCE", _stake.balance);
         // console.log("CURRENT TIME", block.timestamp);
