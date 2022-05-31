@@ -33,9 +33,9 @@ async function fastForwardBlockTime(days) {
   const currentBlockNumber = await ethers.provider.getBlockNumber();
   const currentBlock = await ethers.provider.getBlock(currentBlockNumber);
   const currentBlockTime = dayjs.unix(currentBlock.timestamp);
-  const one1MonthLater = currentBlockTime.add(days, 'day').unix();
+  const nextBlockTime = currentBlockTime.add(days, 'day').unix();
 
-  await network.provider.send('evm_mine', [one1MonthLater]);
+  await network.provider.send('evm_mine', [nextBlockTime]);
 }
 
 async function getRewardTokenId(tx) {
