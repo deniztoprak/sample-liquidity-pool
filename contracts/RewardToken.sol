@@ -34,6 +34,10 @@ contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
+    /**
+     * @dev Return base URI for computing tokenURI (empty by default in ERC721)
+     *      tokenURI = baseURI and the tokenId
+     */
     function _baseURI() internal view override returns (string memory) {
         return _baseTokenURI;
     }
