@@ -38,7 +38,8 @@ contract StakeForReward {
     mapping(address => Stake) private _stakes;
 
     /**
-     * @dev Reward token is injected as a parameter instead of being instantiated inside the contract. This prevents tight coupling with StakeForReward, provides modularity and saves gas.
+     * @dev Reward token is injected as a parameter instead of being instantiated inside the contract.
+     *      This prevents tight coupling with reward implementation, provides modularity and saves gas.
      */
     constructor(address _stakeToken, address _rewardToken) {
         stakeToken = IERC20(_stakeToken);
