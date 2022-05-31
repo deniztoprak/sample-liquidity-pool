@@ -1,15 +1,30 @@
-# Basic Sample Hardhat Project
+# Booking DApp
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+A dummy liquidity pool app based on Ethereum
 
-Try running some of the following tasks:
+## Prerequisites
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-node scripts/sample-script.js
-npx hardhat help
+- NodeJs: ^16.13.2
+- NPM: ^8.1.2
+
+## Setup
+
+Install dependencies:
+
+```sh
+npm install
+```
+
+## Run
+
+- Deploy contracts:
+
+```sh
+npm run deploy
+```
+
+- Test contracts:
+
+```sh
+npm run test
 ```
