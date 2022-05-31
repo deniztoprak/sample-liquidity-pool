@@ -4,8 +4,8 @@ A dummy liquidity pool app based on Ethereum
 
 ## Prerequisites
 
-- NodeJs: ^16.13.2
-- NPM: ^8.1.2
+- NodeJs: ^16.15.0
+- NPM: ^8.11.0
 
 ## Setup
 
