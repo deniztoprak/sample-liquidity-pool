@@ -17,7 +17,7 @@ npm install
 
 ## Run
 
-- Deploy contracts:
+- Deploy contracts to local network:
 
 ```sh
 npm run deploy
