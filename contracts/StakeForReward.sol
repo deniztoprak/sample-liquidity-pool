@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// Use SafeERC20 to deal with non-reverting / non-standard ERC20 tokens
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "../interfaces/IRewardToken.sol";
@@ -14,6 +13,7 @@ import "../interfaces/IRewardToken.sol";
  * @notice The contract rewards staking liquidity by reward tokens
  */
 contract StakeForReward {
+    // Use SafeERC20 to deal with non-reverting / non-standard ERC20 tokens
     using SafeERC20 for IERC20;
 
     // Events
