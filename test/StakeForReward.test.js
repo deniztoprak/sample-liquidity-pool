@@ -126,7 +126,6 @@ describe('StakeForReward', function () {
   });
 
   it('reverts when users try to withdraw more than their balance', async function () {
-    const [deployer, testUser1, testUser2] = await hre.ethers.getSigners();
     const testUser1TokenAmount = hre.ethers.BigNumber.from('1000');
     const unstakedTokenAmount = hre.ethers.BigNumber.from('500');
 
@@ -145,7 +144,6 @@ describe('StakeForReward', function () {
   });
 
   it('allows users claim their reward after a certain time period has passed', async function () {
-    const [deployer, testUser1, testUser2] = await hre.ethers.getSigners();
     const testUser1TokenAmount = hre.ethers.BigNumber.from('500');
     const testUser2TokenAmount = hre.ethers.BigNumber.from('1000');
 
