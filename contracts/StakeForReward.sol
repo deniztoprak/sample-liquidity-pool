@@ -8,6 +8,11 @@ import "../interfaces/IRewardToken.sol";
 
 // import "hardhat/console.sol";
 
+/**
+ * @title Stake contract
+ * @author Deniz Toprak
+ * @notice The contract rewards staking liquidity by reward tokens
+ */
 contract StakeForReward {
     using SafeERC20 for IERC20;
 
@@ -32,6 +37,9 @@ contract StakeForReward {
     uint256 private _totalSupply;
     mapping(address => Stake) private _stakes;
 
+    /**
+     * @dev Reward token is injected as a parameter instead of being instantiated inside the contract. This prevents tight coupling with StakeForReward, provides modularity and saves gas.
+     */
     constructor(address _stakeToken, address _rewardToken) {
         stakeToken = IERC20(_stakeToken);
         rewardToken = IRewardToken(_rewardToken);
@@ -39,16 +47,26 @@ contract StakeForReward {
 
     // View functions
 
+    /**
+     * @notice Returns total liquidity supply of the contract
+     * @dev Method added to provide ERC20 analogue interface
+     */
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
 
+    /**
+     * @notice Returns the balance of an account
+     * @dev Method is added to provide ERC20 analogue interface
+     */
     function balanceOf(address account) external view returns (uint256) {
         return _stakes[account].balance;
     }
 
+    /**
+     * @dev Calculates the reward level by a stake-weighted algorithm
+     */
     function getRewardLevel(address staker) private view returns (uint256) {
-        // Stake-weighted level-up time
         uint256 levelUpTime = ((_totalSupply * 10) / _stakes[staker].balance) * 1 days;
         uint256 rewardLevel = (block.timestamp - _stakes[staker].startTime) / levelUpTime;
 
@@ -57,6 +75,9 @@ contract StakeForReward {
 
     // Mutative functions
 
+    /**
+     * @notice Stake given amount of liquidity
+     */
     function stake(uint256 _amount) external {
         stakeToken.safeTransferFrom(msg.sender, address(this), _amount);
         _totalSupply += _amount;
@@ -65,6 +86,9 @@ contract StakeForReward {
         emit Staked(msg.sender, _amount);
     }
 
+    /**
+     * @notice Withdraw given amount of liquidity
+     */
     function withdraw(uint256 _amount) external {
         require(_amount > 0, "Withdraw amount can not be 0");
         require(_amount <= _stakes[msg.sender].balance, "User doesn't have enough balance");
@@ -77,6 +101,9 @@ contract StakeForReward {
         emit Withdrawn(msg.sender, _amount);
     }
 
+    /**
+     * @notice Claim reward tokens
+     */
     function claimReward() external {
         require(_stakes[msg.sender].balance > 0, "User doesn't have enough balance");
         uint256 rewardLevel = getRewardLevel(msg.sender);

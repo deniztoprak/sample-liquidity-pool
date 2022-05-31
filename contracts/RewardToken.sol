@@ -6,6 +6,12 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+/**
+ * @title A dummy ERC721 contract
+ * @author Deniz Toprak
+ * @notice The contract is intended to test StakeForReward
+ * @dev It implements IRewardToken interface to comply with StakeForReward
+ */
 contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
     using Counters for Counters.Counter;
 
@@ -17,6 +23,9 @@ contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
         _baseTokenURI = baseTokenURI;
     }
 
+    /**
+     * @dev _beforeTokenTransfer is overriden to restrict transfer to the owner
+     */
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -29,10 +38,16 @@ contract RewardToken is ERC721URIStorage, Ownable, IRewardToken {
         return _baseTokenURI;
     }
 
+    /**
+     * @notice Burn token function restricted to owner
+     */
     function burn(uint256 tokenId) external override onlyOwner {
         _burn(tokenId);
     }
 
+    /**
+     * @notice Mint token function restricted to owner
+     */
     function mint(address to, string memory tokenURI) external override onlyOwner returns (uint256) {
         _tokenIdTracker.increment();
         uint256 newItemId = _tokenIdTracker.current();
