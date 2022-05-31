@@ -1,4 +1,4 @@
-# Booking DApp
+# Liquidity Pool
 
 A dummy liquidity pool app based on Ethereum
 
